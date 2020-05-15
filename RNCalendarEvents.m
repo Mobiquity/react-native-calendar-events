@@ -558,6 +558,8 @@ RCT_EXPORT_MODULE()
             organizer = [organizerDescriptionData valueForKey:@"phone"];
         }
         
+        [formedCalendarEvent setValue:organizerEmail forKey:@"organizer"];
+        
         NSMutableArray *attendees = [[NSMutableArray alloc] init];
         Boolean organizerFound = NO;
         

@@ -11,8 +11,8 @@ import android.Manifest;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.provider.CalendarContract;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.database.Cursor;
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -98,7 +98,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         return writePermission == PackageManager.PERMISSION_GRANTED &&
                 readPermission == PackageManager.PERMISSION_GRANTED;
     }
-    
+
     private boolean shouldShowRequestPermissionRationale() {
                 Activity currentActivity = getCurrentActivity();
 
@@ -257,7 +257,6 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         ContentResolver cr = reactContext.getContentResolver();
         String query = "(" + CalendarContract.Attendees.EVENT_ID + " = ?)";
         String[] args = new String[]{eventID};
-
         cursor = cr.query(CalendarContract.Attendees.CONTENT_URI, new String[]{
                 CalendarContract.Attendees._ID,
                 CalendarContract.Attendees.EVENT_ID,
@@ -350,6 +349,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Instances.EVENT_ID,
                 CalendarContract.Instances.DURATION,
                 CalendarContract.Instances.ORIGINAL_SYNC_ID,
+                CalendarContract.Events.ORGANIZER
         }, selection, null, null);
 
 
@@ -377,7 +377,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Events.CALENDAR_ID,
                 CalendarContract.Events.AVAILABILITY,
                 CalendarContract.Events.HAS_ALARM,
-                CalendarContract.Instances.DURATION
+                CalendarContract.Instances.DURATION,
+                CalendarContract.Events.ORGANIZER
         }, selection, null, null);
 
         if (cursor.getCount() > 0) {
@@ -419,7 +420,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Instances.HAS_ALARM,
                 CalendarContract.Instances.ORIGINAL_ID,
                 CalendarContract.Instances.EVENT_ID,
-                CalendarContract.Instances.DURATION
+                CalendarContract.Instances.DURATION,
+                CalendarContract.Events.ORGANIZER
         }, selection, null, null);
 
         if (cursor != null && cursor.moveToFirst()) {
@@ -1082,6 +1084,10 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             event.putString("syncId", cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.ORIGINAL_SYNC_ID)));
         }
 
+        if (cursor.getColumnIndex(CalendarContract.Events.ORGANIZER) != -1 && cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ORGANIZER)) != null) {
+            event.putString("organizer", cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ORGANIZER)));
+        }
+
         return event;
     }
 
@@ -1166,7 +1172,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         } else if (!permissionRequested) {
             promise.resolve("undetermined");
         } else if(this.shouldShowRequestPermissionRationale()) {
-            promise.resolve("denied"); 
+            promise.resolve("denied");
         } else {
             promise.resolve("restricted");
         }
